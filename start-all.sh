@@ -15,18 +15,6 @@ require_cmd pnpm
 require_cmd python
 require_cmd xiaomusic
 
-if [ ! -f "$ROOT_DIR/apps/example/config.local.js" ]; then
-  echo "[ERROR] Missing apps/example/config.local.js"
-  echo "Copy apps/example/config.example.js and fill your real values."
-  exit 1
-fi
-
-if [ ! -f "$ROOT_DIR/xiaomusic.json" ]; then
-  echo "[ERROR] Missing xiaomusic.json"
-  echo "Copy xiaomusic.example.json and fill your real values."
-  exit 1
-fi
-
 if [ ! -f "$ROOT_DIR/conf/setting.json" ]; then
   echo "[ERROR] Missing conf/setting.json"
   echo "Copy conf/setting.example.json and fill your real values."

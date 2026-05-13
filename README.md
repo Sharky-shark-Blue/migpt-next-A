@@ -11,30 +11,29 @@
 
 ## 2. 初始化配置
 
-### 2.1 复制并填写本地私有配置
+### 2.1 复制并填写唯一配置文件
 
-- 复制 `apps/example/config.example.js` 为 `apps/example/config.local.js`
-- 填写以下字段：
-  - `speaker.did`
-  - `speaker.userId`
-  - `speaker.password`（或 `passToken`）
-  - `openai.baseURL`
-  - `openai.apiKey`
-  - `openai.model`
-
-### 2.2 复制并填写 xiaomusic 配置
-
-- 复制 `xiaomusic.example.json` 为 `xiaomusic.json`
 - 复制 `conf/setting.example.json` 为 `conf/setting.json`
-- 至少确认以下字段：
-  - `account`
-  - `password`
-  - `mi_did`
-  - `hostname`
-  - `port`
-  - `music_path`
+- 这就是 **xiaomusic + MiGPT 共用的唯一配置文件**
 
-> 注意：`config.local.js`、`xiaomusic.json`、`conf/setting.json` 都是私密文件，已加入 `.gitignore`，不要提交。
+必填字段：
+- `account`
+- `password`
+- `mi_did`
+- `hostname`
+- `port`
+- `music_path`
+- `openai_baseURL`
+- `openai_apiKey`
+- `openai_model`
+
+MiGPT 可选字段：
+- `migpt_system_prompt`
+- `migpt_historyMaxLength`
+- `migpt_callAIKeywords`
+- `migpt_aiOpening`
+
+> 注意：`conf/setting.json` 是私密文件，已加入 `.gitignore`，不要提交。
 
 ## 3. 一键安装并启动
 
@@ -52,8 +51,8 @@ bash start-all.sh
 
 脚本会按顺序执行：
 1. 安装 Node 依赖（`pnpm install`）
-2. 后台启动 xiaomusic（读取 `conf/setting.json`）
-3. 前台启动 MiGPT（`pnpm --filter @mi-gpt/example start`）
+2. 后台启动 xiaomusic（读取唯一配置 `conf/setting.json`）
+3. 前台启动 MiGPT（同样读取 `conf/setting.json`）
 
 ## 4. 使用方式
 

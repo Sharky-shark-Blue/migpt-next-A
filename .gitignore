@@ -34,8 +34,6 @@ yarn-debug.log*
 yarn-error.log*
 
 # Local private configs
-apps/example/config.local.js
-xiaomusic.json
 conf/setting.json
 conf/.mi.token
 

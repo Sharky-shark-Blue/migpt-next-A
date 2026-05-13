@@ -22,18 +22,6 @@ if errorlevel 1 (
   exit /b 1
 )
 
-if not exist "%ROOT_DIR%apps\example\config.local.js" (
-  echo [ERROR] Missing apps\example\config.local.js
-  echo Copy apps\example\config.example.js and fill your real values.
-  exit /b 1
-)
-
-if not exist "%ROOT_DIR%xiaomusic.json" (
-  echo [ERROR] Missing xiaomusic.json
-  echo Copy xiaomusic.example.json and fill your real values.
-  exit /b 1
-)
-
 if not exist "%ROOT_DIR%conf\setting.json" (
   echo [ERROR] Missing conf\setting.json
   echo Copy conf\setting.example.json and fill your real values.

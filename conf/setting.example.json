@@ -130,7 +130,11 @@
   "recently_added_playlist_len": 50,
   "enable_cmd_del_music": false,
   "web_music_proxy": true,
-  "edge_tts_voice": "zh-CN-XiaoyiNeural",
-  "enable_auto_clean_temp": true,
-  "qrcode_timeout": 120
+  "openai_baseURL": "https://api.openai.com/v1",
+  "openai_apiKey": "YOUR_API_KEY",
+  "openai_model": "gpt-4o-mini",
+  "migpt_system_prompt": "你是一个智能助手。请直接回答用户问题，使用纯文本，不要 Markdown，不要分点，控制在 120 字以内。",
+  "migpt_historyMaxLength": 10,
+  "migpt_callAIKeywords": ["请"],
+  "migpt_aiOpening": "小爱思考中"
 }
