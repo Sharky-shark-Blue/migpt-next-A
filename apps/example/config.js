@@ -1,104 +1,93 @@
+import { existsSync } from 'node:fs';
+
+const localConfigPath = new URL('./config.local.js', import.meta.url);
+const localModule = existsSync(localConfigPath) ? await import('./config.local.js') : null;
+
 /**
  * @type {import('@mi-gpt/next').MiGPTConfig}
  */
-export default {
-  debug: false, // 是否开启调试模式
+const config = {
+  debug: true,
   speaker: {
-    /**
-     * 小爱音箱在米家中设置的名称
-     *
-     * 如果提示找不到设备，请打开调试模式获取设备真实的 name、miotDID 或 mac 地址填入
-     */
-    did: 'Xiaomi 智能音箱 Pro',
-    /**
-     * 小米 ID（一串数字）
-     *
-     * 注意：不是手机号或邮箱，请在小米账号「个人信息」-「小米 ID」查看
-     */
-    userId: '1234567',
-    /**
-     * 小米账号登录密码
-     *
-     * 如果提示登录失败，请使用 passToken 登录
-     */
-    password: 'xxxxx',
-    /**
-     * （可选）小米账号 passToken
-     *
-     * 获取教程：https://github.com/idootop/migpt-next/issues/4
-     */
-    passToken: 'xxxxxxxxx',
+    did: 'YOUR_DEVICE_DID',
+    heartbeat: 1000,
+    userId: 'YOUR_XIAOMI_ID',
+    password: 'YOUR_XIAOMI_PASSWORD',
+    passToken: '',
   },
   openai: {
-    /**
-     * 你的大模型服务提供商的接口地址
-     *
-     * 支持兼容 OpenAI 接口的大模型服务，比如：DeepSeek V3 等
-     *
-     * 注意：一般以 /v1 结尾，不包含 /chat/completions 部分
-     * - ✅ https://api.openai.com/v1
-     * - ❌ https://api.openai.com/v1/（最后多了一个 /
-     * - ❌ https://api.openai.com/v1/chat/completions（不需要加 /chat/completions）
-     */
     baseURL: 'https://api.openai.com/v1',
-    /**
-     * API 密钥
-     */
-    apiKey: 'sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-    /**
-     * 模型名称
-     */
-    model: 'gpt-4.1-mini',
+    apiKey: 'YOUR_API_KEY',
+    model: 'gpt-4o-mini',
   },
   prompt: {
-    /**
-     * 系统提示词，如需关闭可设置为：''（空字符串）
-     */
-    system: '你是一个智能助手，请根据用户的问题给出回答。',
+    system:
+      '你是一个智能助手。请直接回答用户问题，使用纯文本，不要 Markdown，不要分点，控制在 120 字以内。',
   },
   context: {
-    /**
-     * 每次对话携带的最大历史消息数（如需关闭可设置为：0）
-     */
     historyMaxLength: 10,
   },
-  /**
-   * 只回答以下关键词开头的消息：
-   *
-   * - 请问地球为什么是圆的？
-   * - 你知道世界上跑的最快的动物是什么吗？
-   */
-  callAIKeywords: ['请', '你'],
-  /**
-   * 自定义消息回复
-   */
-  async onMessage(engine, { text }) {
-    if (text === '测试播放文字') {
-      return { text: '你好，很高兴认识你！' };
-    }
+  callAIKeywords: ['请'],
+  aiOpening: '小爱思考中',
+  async onMessage(engine, msg) {
+    const text = msg.text.trimStart();
+    const normalizedText = text.replace(/[，。！？、,.!?\s]+$/g, '');
 
-    if (text === '测试播放音乐') {
-      return { url: 'https://example.com/hello.mp3' };
-    }
-
-    if (text === '测试其他能力') {
-      // 打断原来小爱的回复
+    const localPlayKeywords = ['播放本地歌曲', '本地播放歌曲'];
+    if (localPlayKeywords.some((k) => normalizedText.startsWith(k))) {
+      if (engine.config.debug) {
+        console.log(
+          `🐛 命令触发(playlocal)：msgId=${msg.id} text=${msg.text} normalized=${normalizedText}`,
+        );
+      }
       await engine.speaker.abortXiaoAI();
+      return;
+    }
 
-      // 播放文字
-      await engine.speaker.play({ text: '你好' });
+    if (engine.config.callAIKeywords.some((e) => e && normalizedText.startsWith(e))) {
+      if (engine.config.debug) {
+        console.log(`🐛 自定义 AI 触发：msgId=${msg.id} text=${msg.text}`);
+      }
 
-      // 播放音频链接
-      await engine.speaker.play({ url: 'https://example.com/hello.mp3' });
+      await engine.speaker.abortXiaoAI();
+      const opening = (engine.config.aiOpening ?? '').trim() || '小爱思考中';
+      await engine.MiOT.doAction(5, 1, opening);
+      await engine.MiOT.doAction(5, 1, opening);
+      const reply = await engine.askAI(msg);
+      const answer = (reply.text || (await reply.stream?.result()) || '').trim().slice(0, 120);
 
-      // 调用 MiNA 的能力
-      await engine.MiNA.setVolume(50); // 音量调到 50%
+      if (engine.config.debug) {
+        console.log(`🐛 自定义 AI 返回：msgId=${msg.id} answerLength=${answer.length}`);
+      }
 
-      // 调用 MioT 的能力（请到 https://home.miot-spec.com 查询指令列表）
-      await engine.MiOT.doAction(2, 1, 50); // 音量调到 50%
+      if (answer) {
+        await engine.MiOT.doAction(5, 1, answer);
+        return { handled: true };
+      }
 
-      // 告诉 MiGPT 已经处理过这条消息了，不再使用默认的 AI 回复
+      await engine.MiOT.doAction(5, 1, '我刚刚没组织好语言，请再问我一次。');
       return { handled: true };
     }
+  },
+};
+
+export default {
+  ...config,
+  ...(localModule?.default || {}),
+  speaker: {
+    ...config.speaker,
+    ...(localModule?.default?.speaker || {}),
+  },
+  openai: {
+    ...config.openai,
+    ...(localModule?.default?.openai || {}),
+  },
+  prompt: {
+    ...config.prompt,
+    ...(localModule?.default?.prompt || {}),
+  },
+  context: {
+    ...config.context,
+    ...(localModule?.default?.context || {}),
   },
 };

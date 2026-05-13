@@ -33,7 +33,18 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Misc
-.DS_Store
-*.pem
-.mi.json
+# Local private configs
+apps/example/config.local.js
+xiaomusic.json
+conf/setting.json
+conf/.mi.token
+
+# Runtime artifacts
+xiaomusic.log.txt
+music/
+*.log
+*.log.txt
+*.mp3
+
+# Claude local workspace
+.claude/

@@ -1,0 +1,10 @@
+{
+  "account": "YOUR_XIAOMI_ID",
+  "password": "YOUR_XIAOMI_PASSWORD",
+  "mi_did": "YOUR_DEVICE_DID",
+  "hardware": "LX5A",
+  "hostname": "127.0.0.1",
+  "port": 7002,
+  "public_port": 7002,
+  "music_path": "./music"
+}
